@@ -1,0 +1,15 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/FarAwayParkingNotifier.BusinessLogic/bin
+/FarAwayParkingNotifier.BusinessLogic/obj
+/FarAwayParkingNotifier.BusinessLogic.Test/bin
+/FarAwayParkingNotifier.BusinessLogic.Test/obj
+/FarAwayParkingNotifier.Domain/bin
+/FarAwayParkingNotifier.Domain/obj
+/FarAwayParkingNotifier.Repository/bin
+/FarAwayParkingNotifier.Repository/obj
+/FarAwayParkingNotifier.Repository.Test/bin
+/FarAwayParkingNotifier.Repository.Test/obj
