@@ -10,17 +10,16 @@ namespace FarAwayParkingNotifier.BusinessLogic.Test
     [TestFixture]
     public class LocationSignalHandlerIntegrationTest
     {
+        private IConfiguration configuration;
         private string connectionString;
-        private double farAwayDistance;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            var configuration = new ConfigurationBuilder()
+            configuration = new ConfigurationBuilder()
                .AddJsonFile(@"appsettings.json")
                .Build();
             connectionString = configuration.GetConnectionString("CarDeviceTestConnex");
-            farAwayDistance = configuration.GetValue<double>("FarAwayDistance");
         }
 
         [Test]
@@ -45,14 +44,14 @@ namespace FarAwayParkingNotifier.BusinessLogic.Test
             await context.SaveChangesAsync();
 
             var repository = new CarDeviceRepository(context);
-            var locationSignalHandler = new LocationSignalHandler(repository, farAwayDistance);
+            var locationSignalHandler = new LocationSignalHandler(repository, configuration);
 
             var signalLocation = new SignalLocation()
             {
                 SignalSourceId = "VV:AA:AA:AA:01",
                 Location = new NetTopologySuite.Geometries.Point(13.003725d, 55.604870d) { SRID = 4326 }
             };
-            await locationSignalHandler.ProcessIncomingSignalAsync(signalLocation);
+            Assert.DoesNotThrowAsync(async ()=> await locationSignalHandler.ProcessIncomingSignalAsync(signalLocation));
         }
 
         [Test]
@@ -77,14 +76,14 @@ namespace FarAwayParkingNotifier.BusinessLogic.Test
             await context.SaveChangesAsync();
 
             var repository = new CarDeviceRepository(context);
-            var locationSignalHandler = new LocationSignalHandler(repository, farAwayDistance);
+            var locationSignalHandler = new LocationSignalHandler(repository, configuration);
 
             var signalLocation = new SignalLocation()
             {
                 SignalSourceId = "VV:AA:AA:AA:01",
                 Location = new NetTopologySuite.Geometries.Point(13.003725d, 58.604870d) { SRID = 4326 }
             };
-            await locationSignalHandler.ProcessIncomingSignalAsync(signalLocation);
+            Assert.DoesNotThrowAsync(async () => await locationSignalHandler.ProcessIncomingSignalAsync(signalLocation));
         }
     }
 }

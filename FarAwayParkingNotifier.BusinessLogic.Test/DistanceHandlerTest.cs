@@ -4,12 +4,12 @@ using NUnit.Framework;
 namespace FarAwayParkingNotifier.BusinessLogic.Test
 {
     [TestFixture]
-    public class LocationSignalHandlerTest
+    public class DistanceHandlerTest
     {
         [TestCase(13.003725d, 55.604870d, 0.5, false)]
         [TestCase(13.003725d, 58.604870d, 0.5, true)]
         [TestCase(13.003725d, 58.604870d, 5, false)]
-        public void ProcessIncomingSignal_IsDistanceFarAwayTest(double pointX, double pointY, double farAwayDistance, bool expectedResult)
+        public void IsDistanceFarAwayTest(double pointX, double pointY, double farAwayDistance, bool expectedResult)
         {
             var signalLocation = new SignalLocation()
             {
@@ -23,8 +23,7 @@ namespace FarAwayParkingNotifier.BusinessLogic.Test
                 Location = new NetTopologySuite.Geometries.Point(pointX, pointY) { SRID = 4326 }
             };
 
-            var locationSignalHandler = new LocationSignalHandler(null, farAwayDistance);
-            var isDistancesFarAway = locationSignalHandler.IsDistanceFarAway(signalLocation, signalLocationMapped);
+            var isDistancesFarAway = signalLocation.IsDistanceFarAway(signalLocationMapped, farAwayDistance);
             Assert.AreEqual(expectedResult, isDistancesFarAway);
 
 

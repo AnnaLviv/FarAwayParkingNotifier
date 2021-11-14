@@ -1,5 +1,6 @@
 ﻿using FarAwayParkingNotifier.Domain;
 using FarAwayParkingNotifier.Repository;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
 
@@ -7,13 +8,14 @@ namespace FarAwayParkingNotifier.BusinessLogic
 {
     public class LocationSignalHandler:ILocationSignalHandler
     {
+        private const string farAwayDistanceConfigurationKey = "FarAwayDistanceValue";
         private readonly ICarDeviceRepository repository;
-        private readonly double farAwayDistance;
+        private readonly IConfiguration configuration;
 
-        public LocationSignalHandler(ICarDeviceRepository repository, double farAwayDistance)
+        public LocationSignalHandler(ICarDeviceRepository repository, IConfiguration configuration)
         {
             this.repository = repository;
-            this.farAwayDistance = farAwayDistance;
+            this.configuration = configuration;
         }
 
         public async Task ProcessIncomingSignalAsync(SignalLocation signalLocation)
@@ -25,19 +27,12 @@ namespace FarAwayParkingNotifier.BusinessLogic
                 var signalLocationMapped = await repository.GetSignalLocationByIdAsync(mappedLocationId);
                 if(signalLocationMapped != null)
                 {
-                    var isDistanceFarAway =  IsDistanceFarAway(signalLocation, signalLocationMapped);
+                    var farAwayDistanceValue = configuration.GetValue<double>(farAwayDistanceConfigurationKey);
+                    var isDistanceFarAway = signalLocation.IsDistanceFarAway(signalLocationMapped, farAwayDistanceValue);
                     if(isDistanceFarAway)
                         await SendNotification(signalLocation.Location);
                 }
             }
-        }
-
-        public bool IsDistanceFarAway(SignalLocation signalLocation, SignalLocation signalLocationMapped)
-        {
-            var distance = signalLocation.Location.Coordinate.Distance(signalLocationMapped.Location.Coordinate);
-            if (distance >= farAwayDistance)
-                return true;
-            return false;               
         }
 
         private Task SendNotification(NetTopologySuite.Geometries.Point location)

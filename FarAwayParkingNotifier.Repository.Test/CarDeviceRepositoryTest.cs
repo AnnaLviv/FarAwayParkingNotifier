@@ -10,7 +10,7 @@ namespace FarAwayParkingNotifier.Repository.Test
     {
 
         [Test]
-        public async Task SignalLocationExistsTest()
+        public async Task SignalLocationExists_ExpectsFalseTest()
         {
             var builder = new DbContextOptionsBuilder();
             builder.UseInMemoryDatabase("SignalLocationExists");
@@ -20,6 +20,16 @@ namespace FarAwayParkingNotifier.Repository.Test
 
             var result = await repository.SignalLocationExistsAsync("VV:AA:AA:AA:01");
             Assert.IsFalse(result);
+        }
+
+        [Test]
+        public async Task SignalLocationExists_ExpectsTrueTest()
+        {
+            var builder = new DbContextOptionsBuilder();
+            builder.UseInMemoryDatabase("SignalLocationExists");
+            using var context = new CarDeviceDbContext(builder.Options);
+
+            var repository = new CarDeviceRepository(context);
 
             var signalLocation = new SignalLocation()
             {
@@ -28,14 +38,9 @@ namespace FarAwayParkingNotifier.Repository.Test
             };
 
             await context.SignalLocations.AddAsync(signalLocation);
-            Assert.AreEqual(EntityState.Added, context.Entry(signalLocation).State);
-
-            result = await repository.SignalLocationExistsAsync("VV:AA:AA:AA:01");
-            Assert.IsFalse(result);
-
             await context.SaveChangesAsync();
 
-            result = await repository.SignalLocationExistsAsync("VV:AA:AA:AA:01");
+            var result = await repository.SignalLocationExistsAsync("VV:AA:AA:AA:01");
             Assert.IsTrue(result);
         }
 
@@ -55,23 +60,19 @@ namespace FarAwayParkingNotifier.Repository.Test
             };
 
             await context.SignalLocations.AddAsync(signalLocation);
+            await context.SaveChangesAsync();
 
             var result = await repository.GetSignalLocationByIdAsync("VV:AA:AA:AA:01");
-            Assert.AreEqual(null, result);
-
-            await context.SaveChangesAsync();
-            result = await repository.GetSignalLocationByIdAsync("VV:AA:AA:AA:01");
             Assert.AreEqual(signalLocation, result);
         }
 
         [Test]
-        public async Task AddOrUpdateSignalLocationTest()
+        public async Task AddOrUpdateSignalLocation_AddNewLocationTest()
         {
             var builder = new DbContextOptionsBuilder();
             builder.UseInMemoryDatabase("AddOrUpdateSignalLocation");
 
             using var context = new CarDeviceDbContext(builder.Options);
-
             var repository = new CarDeviceRepository(context);
 
             var signalLocation = new SignalLocation()
@@ -82,10 +83,27 @@ namespace FarAwayParkingNotifier.Repository.Test
             await repository.AddOrUpdateSignalLocationAsync(signalLocation);
             var result = await repository.GetSignalLocationByIdAsync("VV:AA:AA:AA:01");
             Assert.AreEqual(signalLocation, result);
+        }
+
+
+        [Test]
+        public async Task AddOrUpdateSignalLocation_UpdateExisingLocationTest()
+        {
+            var builder = new DbContextOptionsBuilder();
+            builder.UseInMemoryDatabase("AddOrUpdateSignalLocation");
+
+            using var context = new CarDeviceDbContext(builder.Options);
+            var repository = new CarDeviceRepository(context);
+            var signalLocation = new SignalLocation()
+            {
+                SignalSourceId = "VV:AA:AA:AA:01",
+                Location = new NetTopologySuite.Geometries.Point(13.003725d, 55.604870d) { SRID = 4326 }
+            };
+            await repository.AddOrUpdateSignalLocationAsync(signalLocation);
 
             signalLocation.Location = new NetTopologySuite.Geometries.Point(13.003725d, 56.604870d) { SRID = 4326 };
             await repository.AddOrUpdateSignalLocationAsync(signalLocation);
-            result = await repository.GetSignalLocationByIdAsync("VV:AA:AA:AA:01");
+            var result = await repository.GetSignalLocationByIdAsync("VV:AA:AA:AA:01");
             Assert.AreEqual(signalLocation, result);
         }
 
